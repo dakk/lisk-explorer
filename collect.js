@@ -8,6 +8,33 @@ var fs = require('fs');
 var _ = require('lodash');
 var colors = require('colors');
 
+/* Execute a promise list, n at time */
+Promise.prototype.allStep = (promiseList, n) => {
+	let i = 0;
+	let promises = [];
+	
+	for (var i = 0; i < promiseList.length; i+=n) {
+		promises.push (new Promise ((resolve, reject) => {
+			var p = promiseList.slice (i, i+n ? i+n <= promiseList.length : promiseList.length);
+
+			Promise.all (p).then ((r) => {
+				resolve (r);							
+			});
+		});
+	}
+	
+	return new Promise ((resolve, reject) => {
+		Promise.all (promises).then ((r) => {
+			var rr = []
+			for (var i = 0; i < r.length; i++) {
+				rr = rr.concat (r[i]);
+			}
+			
+			resolve (rr);
+		});
+	});
+};
+
 var saveNodesReport = function () {
     return new Promise(function (resolve, reject) {
         fs.writeFile('nodes.json', JSON.stringify (nodesReport, null, 4), function (err,data) {
